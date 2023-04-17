@@ -6,6 +6,7 @@ import (
 	"homework/homework_2/internal/global"
 	"io/ioutil"
 	"net/http"
+	"os"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -67,4 +68,28 @@ func CreateImage(c *gin.Context) {
 	global.MaxImage++;
 	c.JSON(http.StatusOK, Response{Res: "success"})
 	
+}
+
+func UpdateImage(c *gin.Context)  {
+
+}
+
+func DeleteImage(c *gin.Context)  {
+	reqURI := RequestURI{}
+	if err := c.ShouldBindUri(&reqURI); err != nil {
+		fmt.Println(err)
+		c.JSON(http.StatusBadRequest, Response{Res:"file is not valid"})
+
+		return
+	}
+
+	if err := os.Remove("images/" +reqURI.ImageId); err != nil {
+		fmt.Println(err)
+		c.JSON(http.StatusBadRequest, Response{Res:"remove failed"})
+
+		return
+	}
+
+	global.MaxImage--;
+	c.JSON(http.StatusOK, Response{Res: "success"})
 }
