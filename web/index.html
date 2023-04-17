@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Rest request page</title>
+  </head>
+
+  <body>
+    <div
+      style="
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        text-align: center;
+      "
+    >
+      <h1>REST REQUEST</h1>
+      <br /><br />
+      <input type="text" id="getNo" style="border-style: solid" /><br /><br />
+      <button onclick="get()">이미지 보기(get)</button><br /><br /><br />
+
+      <input
+        type="file"
+        id="postImage"
+        value="파일 선택"
+        accept="image/*"
+        style="border-style: solid"
+      /><br /><br />
+      <input type="text" id="postNo" style="border-style: solid" /><br /><br />
+      <button id="postButton">이미지 업로드(post)</button><br /><br /><br />
+
+      <input
+        type="file"
+        id="putImage"
+        value="파일 선택"
+        accept="image/*"
+        style="border-style: solid"
+      /><br /><br />
+      <input type="text" id="putNo" style="border-style: solid" /><br /><br />
+      <button id="putButton">이미지 수정(put)</button><br /><br /><br />
+
+      <input
+        type="text"
+        id="deleteNo"
+        style="border-style: solid"
+      /><br /><br />
+      <button onclick="delete_request()">이미지 삭제(delete)</button
+      ><br /><br /><br />
+    </div>
+    <script>
+      var httpRequest = new XMLHttpRequest();
+
+      function imagetobase64(file) {
+        return new Promise((resolve, reject) => {
+          let reader = new FileReader();
+          reader.readAsDataURL(file);
+          reader.onload = (event) => resolve(reader.result);
+          reader.onerror = (error) => reject(error);
+        });
+      }
+
+      function get() {
+        httpRequest.open(
+          "GET",
+          "/images/" + document.getElementById("getNo").value,
+          false
+        );
+        httpRequest.send();
+
+        if (httpRequest.status === 200)
+          location.href = "/images/" + document.getElementById("getNo").value;
+        else alert(httpRequest.response);
+      }
+
+      async function post() {
+        const file = document.getElementById("postImage").files[0];
+        if (!file) alert("파일을 선택해 주세요!");
+        const image = await imagetobase64(file);
+
+        httpRequest.open("POST", "/images", false);
+        httpRequest.setRequestHeader(
+          "Content-Type",
+          "application/json;charset=UTF-8"
+        );
+        httpRequest.send(
+          JSON.stringify({
+            no: document.getElementById("postNo").value,
+            image,
+          })
+        );
+
+        if (httpRequest.status === 201) {
+          location.href = "/images/" + document.getElementById("postNo").value;
+        } else alert(httpRequest.response);
+      }
+      document.getElementById("postButton").onclick = post;
+
+      async function put() {
+        const file = document.getElementById("putImage").files[0];
+        if (!file) alert("파일을 선택해 주세요!");
+        const image = await imagetobase64(file);
+
+        httpRequest.open(
+          "PUT",
+          "/images/" + document.getElementById("putNo").value,
+          false
+        );
+        httpRequest.setRequestHeader(
+          "Content-Type",
+          "application/json;charset=UTF-8"
+        );
+        httpRequest.send(
+          JSON.stringify({
+            image,
+          })
+        );
+
+        if (httpRequest.status === 201) {
+          location.href = "/images/" + document.getElementById("putNo").value;
+        } else alert(httpRequest.response);
+      }
+      document.getElementById("putButton").onclick = put;
+
+      function delete_request() {
+        httpRequest.open(
+          "DELETE",
+          "/images/" + document.getElementById("deleteNo").value,
+          false
+        );
+        httpRequest.send();
+
+        if (httpRequest.status === 204) alert("삭제되었습니다!");
+        else alert(httpRequest.response);
+      }
+    </script>
+  </body>
+</html>
