@@ -2,6 +2,7 @@ package api
 
 import (
 	"encoding/base64"
+	"errors"
 	"fmt"
 	"homework/homework_2/internal/global"
 	"io/ioutil"
@@ -29,7 +30,7 @@ func ReadImage(c *gin.Context) {
 	reqURI := RequestURI{}
 	if err := c.ShouldBindUri(&reqURI); err != nil {
 		fmt.Println(err)
-		c.JSON(http.StatusBadRequest, Response{Res:"file is not valid"})
+		c.JSON(http.StatusBadRequest, Response{Res:"reqURI is not valid"})
 
 		return
 	}
@@ -41,7 +42,7 @@ func CreateImage(c *gin.Context) {
 	req := RequestFile{}
 	if err := c.ShouldBind(&req); err != nil {
 		fmt.Println(err)
-		c.JSON(http.StatusBadRequest, Response{Res:"file is not valid"})
+		c.JSON(http.StatusBadRequest, Response{Res:"reqFile is not valid"})
 
 		return
 	}
@@ -71,7 +72,54 @@ func CreateImage(c *gin.Context) {
 }
 
 func UpdateImage(c *gin.Context)  {
+	reqURI := RequestURI{}
+	req := RequestFile{}
+	if err := c.ShouldBindUri(&reqURI); err != nil {
+		fmt.Println(err)
+		c.JSON(http.StatusBadRequest, Response{Res:"reqURI is not valid"})
 
+		return
+	}
+	if err := c.ShouldBind(&req); err != nil {
+		fmt.Println(err)
+		c.JSON(http.StatusBadRequest, Response{Res:"reqFile is not valid"})
+
+		return
+	}
+
+	//os.Stat() 함수는 파일의 정보를 검색하는 데 사용
+	if _, err := os.Stat("images/" +reqURI.ImageId); err == nil { //빈 식별자 (os.Stat() 함수가 "images/" 디렉토리에 reqURI.ImageId 이름의 파일이 있는지 확인하는 데 사용)
+		//에러가 없으면
+		b64data := req.Image[strings.IndexByte(req.Image, ',')+1:] //binary데이터만 자르기 
+		imageBytes, err := base64.StdEncoding.DecodeString(b64data) //디코딩 
+		if err != nil {
+			fmt.Println(err)
+			c.JSON(http.StatusBadRequest, Response{Res:"imageBytes is failed"})
+	
+			return
+		}
+
+		err = ioutil.WriteFile("images/" + reqURI.ImageId, imageBytes, 0644) 
+
+		if err != nil {
+			fmt.Println(err)
+			c.JSON(http.StatusBadRequest, Response{Res:"writefile is failed"})
+	
+			return
+		}
+	} else if errors.Is(err, os.ErrNotExist) { //에러가 있는경우 에러가 ErrNotExist인 경우 (파일이나 디렉토리 등이 존재하지 않는 경우에 발생하는 에러)
+		fmt.Println(err)
+		c.String(http.StatusNotFound, "404 page not found")
+
+		return
+	} else {
+		fmt.Println(err)
+		c.JSON(http.StatusInternalServerError, err)
+
+		return
+	}
+
+	c.JSON(http.StatusOK, Response{Res: "success"})
 }
 
 func DeleteImage(c *gin.Context)  {
@@ -93,3 +141,6 @@ func DeleteImage(c *gin.Context)  {
 	global.MaxImage--;
 	c.JSON(http.StatusOK, Response{Res: "success"})
 }
+
+// todo : 리팩토링, 반복 코드 빼기
+// 질문 1. from, json 2. 이미지 요청이나 응답할때 base64 인코딩 많이하는지, 저장이나 전송은 어떤형태로 많이 하는지 

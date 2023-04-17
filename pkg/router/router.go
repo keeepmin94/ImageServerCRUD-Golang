@@ -12,8 +12,8 @@ func Router() *gin.Engine {
 	r.StaticFile("/", "web/index.html")
 	r.GET("/images/:id", api.ReadImage)
 	r.POST("/images", api.CreateImage)
-	r.PUT("/images/:id")
-	r.DELETE("/images/:id")
+	r.PUT("/images/:id", api.UpdateImage)
+	r.DELETE("/images/:id", api.DeleteImage)
 
 	return r
 }
