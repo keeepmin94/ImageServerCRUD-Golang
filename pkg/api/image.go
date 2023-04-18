@@ -18,8 +18,8 @@ type RequestURI struct {
 }
 
 type RequestFile struct {
-	Image string `form:"image"` //물어보기 
-	ImageNo string `json:"no"`  //물어보기
+	Image string `form:"image"` 
+	ImageNo string `json:"no"`  
 }
 
 type Response struct {
@@ -142,5 +142,3 @@ func DeleteImage(c *gin.Context)  {
 	c.JSON(http.StatusOK, Response{Res: "success"})
 }
 
-// todo : 리팩토링, 반복 코드 빼기
-// 질문 1. from, json 2. 이미지 요청이나 응답할때 base64 인코딩 많이하는지, 저장이나 전송은 어떤형태로 많이 하는지 
