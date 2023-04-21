@@ -18,7 +18,7 @@ type RequestURI struct {
 }
 
 type RequestFile struct {
-	Image string `form:"image"` 
+	Image string `json:"image"` 
 	ImageNo string `json:"no"`  
 }
 
